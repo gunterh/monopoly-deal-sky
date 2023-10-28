@@ -703,6 +703,23 @@ const machine = createMachine(
                 },
               }),
               assign({ cardsPlayed: () => 0 }),
+              assign({
+                deck: ({ context }) => {
+                  const newDeck = [...context.deck];
+                  newDeck.splice(0, 2);
+                  return newDeck;
+                },
+                playerHands: ({ context }) => {
+                  const newPlayerHands = { ...context.playerHands };
+                  const newDeck = [...context.deck];
+                  const newHand = [
+                    ...newPlayerHands[context.playerInTurn],
+                    ...newDeck.splice(0, 2),
+                  ];
+                  newPlayerHands[context.playerInTurn] = newHand;
+                  return newPlayerHands;
+                },
+              }),
             ],
             always: [
               {
@@ -780,6 +797,6 @@ const machine = createMachine(
   },
 );
 export const skyConfig = {
-  actorId: 'd143f9b3-f1ac-423f-8998-59a7eec75aa3',
+  actorId: '0bcf7eff-3c3a-4995-bbae-6a591aa9d09b',
   machine,
 };

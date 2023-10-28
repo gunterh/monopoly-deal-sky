@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "build": "vite build",
     "lint": "tsc",
     "sky": "xstate sky \"./src/**/*.ts?(x)\""
   },
@@ -11,8 +12,10 @@
     "@statelyai/sky": "0.0.4",
     "@statelyai/sky-react": "0.0.4",
     "@xstate/react": "4.0.0-beta.10",
+    "firebase": "^10.5.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "styled-components": "^6.1.0",
     "xstate": "5.0.0-beta.33"
   },
   "devDependencies": {

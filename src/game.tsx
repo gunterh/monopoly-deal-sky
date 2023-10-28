@@ -1,10 +1,11 @@
 import { useStatelyActor } from '@statelyai/sky-react';
 import { useState } from 'react';
 import { Players } from './Players';
+import { Card, CardType } from './card';
 import { skyConfig } from './game.sky';
 import { Login } from './login';
 
-const url = 'https://sky.stately.ai/fdMVVT';
+const url = 'https://sky.stately.ai/F3tuM9';
 
 export const Game = () => {
   const [playerName, setPlayerName] = useState('');
@@ -44,28 +45,51 @@ export const Game = () => {
   >;
 
   const hand = playerHands ? playerHands[playerName] : [];
+  const size = 100;
 
+  const getColor = (card: CardType) => {
+    const colors = ['red', 'green', 'blue', 'yellow', 'brown', 'orange'];
+    if (colors.includes(card.name)) {
+      return card.name;
+    }
+    return 'white';
+  };
   return (
     <div className="app">
       <div className="app-header">
-        <h1>Monopoly Deal</h1>
+        <h2>Monopoly Deal</h2>
         <button onClick={() => send({ type: 'game.restart' })}>Reset</button>
         <h2>
           <strong>Current State: {JSON.stringify(state.value)}</strong>
         </h2>
-        <ul>
+        <div
+          style={{
+            width: '80vw',
+            overflowX: 'auto',
+            display: 'flex',
+            gap: '1rem',
+          }}
+        >
           {(hand || []).map((card) => {
+            const deckCard = (state.context.cards as Record<string, any>)[
+              card
+            ] as CardType;
             return (
-              <li key={card}>
-                <pre>
-                  {JSON.stringify(
-                    (state.context.cards as Record<string, any>)[card],
-                  )}
-                </pre>
-              </li>
+              <div key={card}>
+                <Card
+                  color={getColor(deckCard)}
+                  size={size}
+                  title={deckCard.name}
+                  value={
+                    deckCard.type !== 'PropertyWildCard'
+                      ? deckCard.value
+                      : undefined
+                  }
+                />
+              </div>
             );
           })}
-        </ul>
+        </div>
         <Players players={state.context.players as string[]} />
         <Login playerName={playerName} setPlayerName={setPlayerName} />
         {state.can(createGameEvent) && (

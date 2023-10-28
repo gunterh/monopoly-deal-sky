@@ -631,3 +631,23 @@ const getPlayerHands = (_deck, players) => {
 };
 
 getPlayerHands(deck, ['player1', 'player2']);
+
+const getPlayerHand = (context) => {
+  const newPlayerHands = { ...context.playerHands };
+  const newDeck = [...context.deck];
+  const newHand = [
+    ...newPlayerHands[context.playerInTurn],
+    ...newDeck.splice(0, 2),
+  ];
+  newPlayerHands[context.playerInTurn] = newHand;
+  return newPlayerHands;
+};
+
+getPlayerHand({
+  playerHands: {
+    player1: [1, 2, 3, 4, 5],
+    player2: [6, 7, 8, 9, 10],
+  },
+  deck: [11, 12, 13, 14, 15],
+  playerInTurn: 'player1',
+});
