@@ -613,7 +613,10 @@ const machine = createMachine(
       },
       players: [],
       cardsPlayed: 0,
+      discardPile: [],
+      playerBanks: {},
       playerHands: {},
+      playerProperties: {},
     },
     id: 'game-machine',
     initial: 'idle',
@@ -721,18 +724,9 @@ const machine = createMachine(
                 },
               }),
             ],
-            always: [
-              {
-                target: 'end',
-                guard: 'there is a winner',
-              },
-              {
-                target: 'playingCards',
-              },
-            ],
-          },
-          end: {
-            type: 'final',
+            always: {
+              target: 'playingCards',
+            },
           },
           playingCards: {
             always: {
@@ -746,13 +740,61 @@ const machine = createMachine(
                   context.playerInTurn === event.player,
               },
               'player.playCard': {
+                target: 'playingSelectedCard',
+                guard: ({ context, event }) =>
+                  context.playerInTurn === event.player,
+              },
+              'player.selectCard': {
                 target: 'playingCards',
                 guard: ({ context, event }) =>
                   context.playerInTurn === event.player,
-                actions: assign({
-                  cardsPlayed: ({ context }) => context.cardsPlayed + 1,
-                }),
+                actions: assign({ selectedCard: ({ event }) => event.card }),
               },
+            },
+          },
+          playingSelectedCard: {
+            always: [
+              {
+                target: 'playingPropertyCard',
+                guard: ({ context }) =>
+                  context.playerInTurn &&
+                  context.selectedCard &&
+                  context.cards[context.selectedCard] &&
+                  (context.cards[context.selectedCard].type ===
+                    'PropertyCard' ||
+                    context.selectedCard.type === 'PropertyWildCard'),
+              },
+              {
+                target: 'playingCards',
+              },
+            ],
+          },
+          playingPropertyCard: {
+            entry: assign({
+              playerHands: ({ context }) => {
+                return {
+                  ...context.playerHands,
+                  [context.playerInTurn]: (
+                    context.playerHands[context.playerInTurn] ?? []
+                  ).filter((x) => x !== context.selectedCard),
+                };
+              },
+              playerProperties: ({ context }) => {
+                return {
+                  ...context.playerProperties,
+                  [context.playerInTurn]: [
+                    ...(context.playerProperties[context.playerInTurn] ?? []),
+                    context.selectedCard,
+                  ],
+                };
+              },
+            }),
+            exit: [
+              assign({ selectedCard: () => undefined }),
+              assign({ cardsPlayed: ({ context }) => context.cardsPlayed + 1 }),
+            ],
+            always: {
+              target: 'playingCards',
             },
           },
         },
@@ -778,25 +820,30 @@ const machine = createMachine(
         | { type: 'game.restart' }
         | { type: 'game.addPlayer'; player: string }
         | { type: 'player.endTurn'; player: string }
-        | { type: 'player.playCard'; player: string },
+        | { type: 'player.playCard'; player: string }
+        | { type: 'player.selectCard'; card: string; player: string },
       context: {} as {
         deck: unknown[];
         cards: {};
         players: unknown[];
         cardsPlayed: number;
+        discardPile: unknown[];
+        playerBanks: {};
         playerHands: {};
         playerInTurn: string;
+        selectedCard: string;
+        playerProperties: {};
       },
     },
   },
   {
     actions: {},
     actors: {},
-    guards: { 'there is a winner': ({ context, event, guard }) => false },
+    guards: {},
     delays: {},
   },
 );
 export const skyConfig = {
-  actorId: '0bcf7eff-3c3a-4995-bbae-6a591aa9d09b',
+  actorId: 'b5788787-f081-4cef-a6dc-8f4a273c6288',
   machine,
 };

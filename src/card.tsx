@@ -80,22 +80,39 @@ const CardValue = ({ value, position }: CardValueProps) => {
 };
 
 interface CardProps {
+  card: string;
   size: number;
   title: string;
   value?: number;
   color: string;
   children?: React.ReactNode;
+  selected?: boolean;
+  onClick: (card: string) => void;
 }
 
-export const Card = ({ children, size, title, value, color }: CardProps) => (
-  <Svg size={size} viewBox="0 0 506 786" xmlns="http://www.w3.org/2000/svg">
+export const Card = ({
+  children,
+  size,
+  title,
+  value,
+  color,
+  selected,
+  onClick,
+  card,
+}: CardProps) => (
+  <Svg
+    onClick={() => onClick(card)}
+    size={selected ? size + 20 : size}
+    viewBox="0 0 506 786"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <rect
       width="506"
       height="786"
       rx="20"
       style={{
         stroke: '#000000',
-        strokeWidth: 1,
+        strokeWidth: selected ? 3 : 1,
         fill: 'white',
       }}
     />
