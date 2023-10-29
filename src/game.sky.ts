@@ -771,6 +771,7 @@ const machine = createMachine(
           },
           playingPropertyCard: {
             entry: assign({
+              cardsPlayed: ({ context }) => context.cardsPlayed + 1,
               playerHands: ({ context }) => {
                 return {
                   ...context.playerHands,
@@ -779,6 +780,7 @@ const machine = createMachine(
                   ).filter((x) => x !== context.selectedCard),
                 };
               },
+              selectedCard: () => undefined,
               playerProperties: ({ context }) => {
                 return {
                   ...context.playerProperties,
@@ -789,10 +791,6 @@ const machine = createMachine(
                 };
               },
             }),
-            exit: [
-              assign({ selectedCard: () => undefined }),
-              assign({ cardsPlayed: ({ context }) => context.cardsPlayed + 1 }),
-            ],
             always: {
               target: 'playingCards',
             },
@@ -808,8 +806,10 @@ const machine = createMachine(
         target: '.idle',
         actions: assign({
           players: () => [],
+          playerBanks: () => ({}),
           playerHands: () => ({}),
           playerInTurn: () => undefined,
+          playerProperties: () => ({}),
         }),
       },
     },
@@ -844,6 +844,6 @@ const machine = createMachine(
   },
 );
 export const skyConfig = {
-  actorId: 'b5788787-f081-4cef-a6dc-8f4a273c6288',
+  actorId: '08fbb172-b49a-422d-b221-cba371ba6ad1',
   machine,
 };

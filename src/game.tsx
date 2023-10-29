@@ -2,11 +2,10 @@ import { useStatelyActor } from '@statelyai/sky-react';
 import { useState } from 'react';
 import { CardCollection } from './CardCollection';
 import { Players } from './Players';
-import { Card, CardType } from './card';
 import { skyConfig } from './game.sky';
 import { Login } from './login';
 
-const url = 'https://sky.stately.ai/7VPPHi';
+const url = 'https://sky.stately.ai/w9zoZS';
 
 export const Game = () => {
   const [playerName, setPlayerName] = useState('');
