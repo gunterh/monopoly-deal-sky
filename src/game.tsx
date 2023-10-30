@@ -1,21 +1,28 @@
 import { useStatelyActor } from '@statelyai/sky-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CardCollection } from './CardCollection';
 import { Players } from './Players';
 import { skyConfig } from './game.sky';
 import { Login } from './login';
 
-const url = 'https://sky.stately.ai/w9zoZS';
+const url = 'https://sky.stately.ai/rOtOEN';
 
 export const Game = () => {
   const [playerName, setPlayerName] = useState('');
-  const [state, send] = useStatelyActor(
+  const [state, send, actor] = useStatelyActor(
     {
       url,
       sessionId: 'monopoly-deal-rostros',
     },
     skyConfig,
   );
+
+  useEffect(() => {
+    const subscription = actor?.subscribe((s) => {
+      console.log('state', s);
+    });
+    return () => subscription?.unsubscribe();
+  }, [actor]);
 
   const createGameEvent = {
     type: 'game.create' as const,
@@ -52,22 +59,6 @@ export const Game = () => {
     string[]
   >;
 
-  let cardNumber = 'first';
-  switch (state.context.cardsPlayed) {
-    case 0: {
-      cardNumber = 'first';
-      break;
-    }
-    case 1: {
-      cardNumber = 'second';
-      break;
-    }
-    case 2: {
-      cardNumber = 'third';
-      break;
-    }
-  }
-
   const hand = playerHands ? playerHands[playerName] ?? [] : [];
   const properties = playerProperties ? playerProperties[playerName] ?? [] : [];
   const bank = playerBank ? playerBank[playerName] ?? [] : [];
@@ -76,6 +67,13 @@ export const Game = () => {
   const selectedCard =
     playerName === state.context.playerInTurn
       ? state.context.selectedCard
+      : undefined;
+
+  (window as unknown as any).state = state;
+
+  const cardsPlayed =
+    playerName === state.context.playerInTurn
+      ? state.context.cardsPlayed
       : undefined;
 
   return (
@@ -103,6 +101,9 @@ export const Game = () => {
             send({ type: 'player.selectCard', player: playerName, card });
           }}
           selectedCard={selectedCard}
+          showPlayButton={state.can(playCardEvent)}
+          onPlayCard={() => send(playCardEvent)}
+          cardsPlayed={cardsPlayed}
         />
 
         <CardCollection
@@ -114,6 +115,8 @@ export const Game = () => {
             send({ type: 'player.selectCard', player: playerName, card });
           }}
           selectedCard={selectedCard}
+          showPlayButton={false}
+          onPlayCard={() => {}}
         />
 
         <CardCollection
@@ -125,6 +128,8 @@ export const Game = () => {
             send({ type: 'player.selectCard', player: playerName, card });
           }}
           selectedCard={selectedCard}
+          showPlayButton={false}
+          onPlayCard={() => {}}
         />
 
         <div className="button-group">
@@ -137,11 +142,7 @@ export const Game = () => {
           {state.can(startGameEvent) && (
             <button onClick={() => send(startGameEvent)}>Start Game</button>
           )}
-          {state.can(playCardEvent) && (
-            <button
-              onClick={() => send(playCardEvent)}
-            >{`Play your ${cardNumber} card`}</button>
-          )}
+
           {state.can(endTurnEvent) && (
             <button onClick={() => send(endTurnEvent)}>End Turn</button>
           )}

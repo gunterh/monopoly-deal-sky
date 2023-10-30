@@ -616,6 +616,8 @@ const machine = createMachine(
       discardPile: [],
       playerBanks: {},
       playerHands: {},
+      playerInTurn: "''",
+      selectedCard: "''",
       playerProperties: {},
     },
     id: 'game-machine',
@@ -742,6 +744,8 @@ const machine = createMachine(
               'player.playCard': {
                 target: 'playingSelectedCard',
                 guard: ({ context, event }) =>
+                  context.playerInTurn &&
+                  context.selectedCard &&
                   context.playerInTurn === event.player,
               },
               'player.selectCard': {
@@ -757,12 +761,11 @@ const machine = createMachine(
               {
                 target: 'playingPropertyCard',
                 guard: ({ context }) =>
-                  context.playerInTurn &&
-                  context.selectedCard &&
                   context.cards[context.selectedCard] &&
                   (context.cards[context.selectedCard].type ===
                     'PropertyCard' ||
-                    context.selectedCard.type === 'PropertyWildCard'),
+                    context.cards[context.selectedCard].type ===
+                      'PropertyWildCard'),
               },
               {
                 target: 'playingCards',
@@ -780,7 +783,7 @@ const machine = createMachine(
                   ).filter((x) => x !== context.selectedCard),
                 };
               },
-              selectedCard: () => undefined,
+              selectedCard: () => '',
               playerProperties: ({ context }) => {
                 return {
                   ...context.playerProperties,
@@ -808,7 +811,7 @@ const machine = createMachine(
           players: () => [],
           playerBanks: () => ({}),
           playerHands: () => ({}),
-          playerInTurn: () => undefined,
+          playerInTurn: () => '',
           playerProperties: () => ({}),
         }),
       },
@@ -844,6 +847,6 @@ const machine = createMachine(
   },
 );
 export const skyConfig = {
-  actorId: '08fbb172-b49a-422d-b221-cba371ba6ad1',
+  actorId: 'cf2c23a3-b539-4d78-8483-841f5e09471a',
   machine,
 };
