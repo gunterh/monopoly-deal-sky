@@ -5,7 +5,7 @@ import { Players } from './Players';
 import { skyConfig } from './game.sky';
 import { Login } from './login';
 
-const url = 'https://sky.stately.ai/rOtOEN';
+const url = 'https://sky.stately.ai/vhCmVE';
 
 export const Game = () => {
   const [playerName, setPlayerName] = useState('');

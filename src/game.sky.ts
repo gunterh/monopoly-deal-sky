@@ -808,11 +808,11 @@ const machine = createMachine(
       'game.restart': {
         target: '.idle',
         actions: assign({
-          players: () => [],
-          playerBanks: () => ({}),
-          playerHands: () => ({}),
-          playerInTurn: () => '',
-          playerProperties: () => ({}),
+          players: [],
+          playerBanks: {},
+          playerHands: {},
+          playerInTurn: '',
+          playerProperties: {},
         }),
       },
     },
@@ -847,6 +847,6 @@ const machine = createMachine(
   },
 );
 export const skyConfig = {
-  actorId: 'cf2c23a3-b539-4d78-8483-841f5e09471a',
+  actorId: '6e4145e4-6cb7-4942-8001-d884e107e34e',
   machine,
 };
