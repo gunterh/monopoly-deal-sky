@@ -1,10 +1,12 @@
 import styled from 'styled-components';
 
-interface PlayersProps {
+interface Props {
   players: string[];
+  onSelectPlayer: (player: string) => void;
+  playerName?: string;
 }
 
-const TabButton = styled.button`
+const TabButton = styled.button<{ active?: boolean }>`
   background: none;
   border: none;
   cursor: pointer;
@@ -13,6 +15,7 @@ const TabButton = styled.button`
   margin: 0.5rem;
   border-radius: 0.5rem;
   outline: none;
+  border: ${(props) => (props.active ? '2px solid' : 'none')};
   &:hover {
     background: #eee;
   }
@@ -23,11 +26,17 @@ const Tab = styled.div`
   align-items: center;
 `;
 
-export const Players = ({ players }: PlayersProps) => {
+export const Players = (props: Props) => {
   return (
     <Tab>
-      {players.map((player) => (
-        <TabButton key={player}>{player}</TabButton>
+      {props.players.map((player) => (
+        <TabButton
+          active={player === props.playerName}
+          key={player}
+          onClick={() => props.onSelectPlayer(player)}
+        >
+          {player}
+        </TabButton>
       ))}
     </Tab>
   );

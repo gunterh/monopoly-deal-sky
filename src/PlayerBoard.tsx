@@ -1,6 +1,6 @@
 import { EventFromLogic, SnapshotFrom } from 'xstate';
 import { CardCollection } from './CardCollection';
-import { skyConfig } from './app.sky';
+import { skyConfig } from './game.sky';
 
 interface Props {
   state: SnapshotFrom<typeof skyConfig.machine>;

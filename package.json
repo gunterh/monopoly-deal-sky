@@ -6,7 +6,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "tsc",
-    "sky": "xstate sky \"./src/**/*.ts?(x)\""
+    "sky": "xstate sky \"./src/**/*.ts?(x)\"",
+    "deploy": "firebase deploy --only hosting",
+    "deploy:dev": "firebase deploy --only hosting:monopoly-deal-sky-dev"
   },
   "dependencies": {
     "@statelyai/sky": "0.0.4",

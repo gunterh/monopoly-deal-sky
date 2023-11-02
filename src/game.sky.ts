@@ -809,7 +809,7 @@ const machine = createMachine(
         target: '.idle',
         actions: assign({
           deck: [],
-          players: [],
+          players: () => [],
           playerBanks: {},
           playerHands: {},
           playerInTurn: '',
@@ -848,6 +848,6 @@ const machine = createMachine(
   },
 );
 export const skyConfig = {
-  actorId: '409fd197-7fdd-463b-8837-e465d3384d83',
+  actorId: '099e64c1-200e-47ec-805b-f8397f3a2df1',
   machine,
 };

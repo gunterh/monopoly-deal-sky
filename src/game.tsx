@@ -1,26 +1,28 @@
-import { useSelector } from '@xstate/react';
-import { useEffect, useState } from 'react';
-import { ActorRefFrom } from 'xstate';
+import { useStatelyActor } from '@statelyai/sky-react';
+import { useMachine } from '@xstate/react';
+import { useState } from 'react';
 import { PlayerBoard } from './PlayerBoard';
 import { Players } from './Players';
-import { skyConfig } from './app.sky';
+import { skyConfig } from './game.sky';
 import { Login } from './login';
 
-interface Props {
-  actor: ActorRefFrom<typeof skyConfig.machine>;
-}
+const url = 'https://sky.stately.ai/6yOdof';
 
-export const Game = ({ actor }: Props) => {
+export const Game = () => {
   const [playerName, setPlayerName] = useState('');
+  // const [state, send] = useStatelyActor(
+  //   {
+  //     url,
+  //     sessionId: 'monopoly-deal-rostros',
+  //   },
+  //   skyConfig,
+  // );
 
-  useEffect(() => {
-    const subscription = actor?.subscribe((s) => {
-      console.log('state', s);
-    });
-    return () => subscription?.unsubscribe();
-  }, [actor]);
+  const [state, send] = useMachine(skyConfig.machine);
 
-  const players = useSelector(actor, (state) => state.context.players);
+  if (!send) return <div>loading...</div>;
+
+  const players = state.context.players;
 
   const createGameEvent = {
     type: 'game.create' as const,
@@ -32,13 +34,14 @@ export const Game = ({ actor }: Props) => {
 
   const joinEvent = { type: 'game.addPlayer' as const, player: playerName };
 
-  const canCreateGame = useSelector(actor, (state) =>
-    state.can(createGameEvent),
-  );
-  const canJoin = useSelector(actor, (state) => state.can(joinEvent));
-  const canStartGame = useSelector(actor, (state) => state.can(startGameEvent));
+  const canCreateGame = state.can(createGameEvent);
 
-  const state = useSelector(actor, (state) => state);
+  const canJoin = state.can(joinEvent);
+  const canStartGame = state.can(startGameEvent);
+
+  const handleSelectPlayer = (player: string) => {
+    setPlayerName(player);
+  };
 
   return (
     <div className="app">
@@ -48,21 +51,21 @@ export const Game = ({ actor }: Props) => {
         } Welcome to Monopoly Deal `}</h2>
         <Login playerName={playerName} setPlayerName={setPlayerName} />
       </div>
-      <Players players={players as string[]} />
+      <Players
+        players={players as string[]}
+        onSelectPlayer={handleSelectPlayer}
+        playerName={playerName}
+      />
       {playerName && (
-        <PlayerBoard state={state} playerName={playerName} send={actor.send} />
+        <PlayerBoard state={state} playerName={playerName} send={send} />
       )}
       <div className="button-group">
         {canCreateGame && (
-          <button onClick={() => actor.send(createGameEvent)}>
-            Create Game
-          </button>
+          <button onClick={() => send(createGameEvent)}>Create Game</button>
         )}
-        {canJoin && (
-          <button onClick={() => actor.send(joinEvent)}>Join Game</button>
-        )}
+        {canJoin && <button onClick={() => send(joinEvent)}>Join Game</button>}
         {canStartGame && (
-          <button onClick={() => actor.send(startGameEvent)}>Start Game</button>
+          <button onClick={() => send(startGameEvent)}>Start Game</button>
         )}
       </div>
     </div>
