@@ -808,6 +808,7 @@ const machine = createMachine(
       'game.restart': {
         target: '.idle',
         actions: assign({
+          deck: [],
           players: [],
           playerBanks: {},
           playerHands: {},
@@ -847,6 +848,6 @@ const machine = createMachine(
   },
 );
 export const skyConfig = {
-  actorId: '6e4145e4-6cb7-4942-8001-d884e107e34e',
+  actorId: '409fd197-7fdd-463b-8837-e465d3384d83',
   machine,
 };

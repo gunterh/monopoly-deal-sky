@@ -1,21 +1,17 @@
-import { useStatelyActor } from '@statelyai/sky-react';
+import { useSelector } from '@xstate/react';
 import { useEffect, useState } from 'react';
-import { CardCollection } from './CardCollection';
+import { ActorRefFrom } from 'xstate';
+import { PlayerBoard } from './PlayerBoard';
 import { Players } from './Players';
-import { skyConfig } from './game.sky';
+import { skyConfig } from './app.sky';
 import { Login } from './login';
 
-const url = 'https://sky.stately.ai/vhCmVE';
+interface Props {
+  actor: ActorRefFrom<typeof skyConfig.machine>;
+}
 
-export const Game = () => {
+export const Game = ({ actor }: Props) => {
   const [playerName, setPlayerName] = useState('');
-  const [state, send, actor] = useStatelyActor(
-    {
-      url,
-      sessionId: 'monopoly-deal-rostros',
-    },
-    skyConfig,
-  );
 
   useEffect(() => {
     const subscription = actor?.subscribe((s) => {
@@ -23,6 +19,8 @@ export const Game = () => {
     });
     return () => subscription?.unsubscribe();
   }, [actor]);
+
+  const players = useSelector(actor, (state) => state.context.players);
 
   const createGameEvent = {
     type: 'game.create' as const,
@@ -34,126 +32,38 @@ export const Game = () => {
 
   const joinEvent = { type: 'game.addPlayer' as const, player: playerName };
 
-  const playCardEvent = {
-    type: 'player.playCard' as const,
-    player: playerName,
-  };
+  const canCreateGame = useSelector(actor, (state) =>
+    state.can(createGameEvent),
+  );
+  const canJoin = useSelector(actor, (state) => state.can(joinEvent));
+  const canStartGame = useSelector(actor, (state) => state.can(startGameEvent));
 
-  const endTurnEvent = {
-    type: 'player.endTurn' as const,
-    player: playerName,
-  };
-
-  if (!send) return <div>loading...</div>;
-
-  const playerHands = (state.context.playerHands ?? {}) as Record<
-    string,
-    string[]
-  >;
-  const playerProperties = (state.context.playerProperties ?? {}) as Record<
-    string,
-    string[]
-  >;
-  const playerBank = (state.context.playerBanks ?? {}) as Record<
-    string,
-    string[]
-  >;
-
-  const hand = playerHands ? playerHands[playerName] ?? [] : [];
-  const properties = playerProperties ? playerProperties[playerName] ?? [] : [];
-  const bank = playerBank ? playerBank[playerName] ?? [] : [];
-  const size = 80;
-
-  const selectedCard =
-    playerName === state.context.playerInTurn
-      ? state.context.selectedCard
-      : undefined;
-
-  (window as unknown as any).state = state;
-
-  const cardsPlayed =
-    playerName === state.context.playerInTurn
-      ? state.context.cardsPlayed
-      : undefined;
+  const state = useSelector(actor, (state) => state);
 
   return (
     <div className="app">
       <div className="app-header">
-        <h2>Monopoly Deal</h2>
+        <h2>{`${
+          playerName ? playerName + ', ' : ''
+        } Welcome to Monopoly Deal `}</h2>
         <Login playerName={playerName} setPlayerName={setPlayerName} />
       </div>
-      <div
-        style={{
-          backgroundColor:
-            state.context.playerInTurn === playerName ? '#c3e4c2' : '',
-          padding: '10px',
-          marginTop: '10px',
-          marginBottom: '10px',
-          border: '1px dashed black',
-        }}
-      >
-        <CardCollection
-          cards={state.context.cards ?? {}}
-          size={size}
-          hand={hand}
-          title="Your Hand"
-          onCardClick={(card) => {
-            send({ type: 'player.selectCard', player: playerName, card });
-          }}
-          selectedCard={selectedCard}
-          showPlayButton={state.can(playCardEvent)}
-          onPlayCard={() => send(playCardEvent)}
-          cardsPlayed={cardsPlayed}
-        />
-
-        <CardCollection
-          cards={state.context.cards ?? {}}
-          size={size}
-          hand={properties}
-          title="Properties"
-          onCardClick={(card) => {
-            send({ type: 'player.selectCard', player: playerName, card });
-          }}
-          selectedCard={selectedCard}
-          showPlayButton={false}
-          onPlayCard={() => {}}
-        />
-
-        <CardCollection
-          cards={state.context.cards ?? {}}
-          size={size}
-          hand={bank}
-          title="Your Bank"
-          onCardClick={(card) => {
-            send({ type: 'player.selectCard', player: playerName, card });
-          }}
-          selectedCard={selectedCard}
-          showPlayButton={false}
-          onPlayCard={() => {}}
-        />
-
-        <div className="button-group">
-          {state.can(createGameEvent) && (
-            <button onClick={() => send(createGameEvent)}>Create Game</button>
-          )}
-          {state.can(joinEvent) && (
-            <button onClick={() => send(joinEvent)}>Join Game</button>
-          )}
-          {state.can(startGameEvent) && (
-            <button onClick={() => send(startGameEvent)}>Start Game</button>
-          )}
-
-          {state.can(endTurnEvent) && (
-            <button onClick={() => send(endTurnEvent)}>End Turn</button>
-          )}
-        </div>
-      </div>
-      <div>
-        <strong>Current State: {JSON.stringify(state.value)}</strong>
-      </div>{' '}
-      <Players players={state.context.players as string[]} />
+      <Players players={players as string[]} />
+      {playerName && (
+        <PlayerBoard state={state} playerName={playerName} send={actor.send} />
+      )}
       <div className="button-group">
-        <button onClick={() => send({ type: 'game.restart' })}>Reset</button>
+        {canCreateGame && (
+          <button onClick={() => actor.send(createGameEvent)}>
+            Create Game
+          </button>
+        )}
+        {canJoin && (
+          <button onClick={() => actor.send(joinEvent)}>Join Game</button>
+        )}
+        {canStartGame && (
+          <button onClick={() => actor.send(startGameEvent)}>Start Game</button>
+        )}
       </div>
     </div>
   );

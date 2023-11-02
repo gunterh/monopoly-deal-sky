@@ -10,14 +10,9 @@ export const Login = ({ setPlayerName, playerName }: LoginProps) => {
 
   if (playerName) {
     return (
-      <>
-        <div className="app-header__player-name">
-          <h3>{playerName}</h3>
-        </div>
-        <div>
-          <button onClick={() => setPlayerName('')}>Logout</button>
-        </div>
-      </>
+      <div>
+        <button onClick={() => setPlayerName('')}>Logout</button>
+      </div>
     );
   }
   return (
