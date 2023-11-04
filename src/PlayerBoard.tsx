@@ -5,10 +5,16 @@ import { skyConfig } from './game.sky';
 interface Props {
   state: SnapshotFrom<typeof skyConfig.machine>;
   playerName: string;
+  selectedPlayer: string;
   send: (event: EventFromLogic<typeof skyConfig.machine>) => void;
 }
 
-export const PlayerBoard = ({ state, playerName, send }: Props) => {
+export const PlayerBoard = ({
+  state,
+  playerName,
+  send,
+  selectedPlayer,
+}: Props) => {
   const playerHands = (state.context.playerHands ?? {}) as Record<
     string,
     string[]
@@ -25,28 +31,30 @@ export const PlayerBoard = ({ state, playerName, send }: Props) => {
   if (!state.matches('playing')) return null;
 
   const cardsPlayed =
-    playerName === state.context.playerInTurn
+    selectedPlayer === state.context.playerInTurn
       ? state.context.cardsPlayed
       : undefined;
 
-  const hand = playerHands ? playerHands[playerName] ?? [] : [];
-  const properties = playerProperties ? playerProperties[playerName] ?? [] : [];
-  const bank = playerBank ? playerBank[playerName] ?? [] : [];
+  const hand = playerHands ? playerHands[selectedPlayer] ?? [] : [];
+  const properties = playerProperties
+    ? playerProperties[selectedPlayer] ?? []
+    : [];
+  const bank = playerBank ? playerBank[selectedPlayer] ?? [] : [];
   const size = 80;
 
   const selectedCard =
-    playerName === state.context.playerInTurn
+    selectedPlayer === state.context.playerInTurn
       ? state.context.selectedCard
       : undefined;
 
   const playCardEvent = {
     type: 'player.playCard' as const,
-    player: playerName,
+    player: selectedPlayer,
   };
 
   const endTurnEvent = {
     type: 'player.endTurn' as const,
-    player: playerName,
+    player: selectedPlayer,
   };
 
   return (
@@ -54,7 +62,7 @@ export const PlayerBoard = ({ state, playerName, send }: Props) => {
       <div
         style={{
           backgroundColor:
-            state.context.playerInTurn === playerName ? '#c3e4c2' : '',
+            state.context.playerInTurn === selectedPlayer ? '#c3e4c2' : '',
           padding: '10px',
           marginTop: '10px',
           marginBottom: '10px',
@@ -65,14 +73,15 @@ export const PlayerBoard = ({ state, playerName, send }: Props) => {
           cards={state.context.cards ?? {}}
           size={size}
           hand={hand}
-          title="Your Hand"
+          title={`${selectedPlayer}'s Hand`}
           onCardClick={(card) => {
-            send({ type: 'player.selectCard', player: playerName, card });
+            send({ type: 'player.selectCard', player: selectedPlayer, card });
           }}
           selectedCard={selectedCard}
           showPlayButton={state.can(playCardEvent)}
           onPlayCard={() => send(playCardEvent)}
           cardsPlayed={cardsPlayed}
+          showEmptyCard={selectedPlayer !== playerName}
         />
 
         <CardCollection
@@ -81,7 +90,7 @@ export const PlayerBoard = ({ state, playerName, send }: Props) => {
           hand={properties}
           title="Properties"
           onCardClick={(card) => {
-            send({ type: 'player.selectCard', player: playerName, card });
+            send({ type: 'player.selectCard', player: selectedPlayer, card });
           }}
           selectedCard={selectedCard}
           showPlayButton={false}
@@ -94,7 +103,7 @@ export const PlayerBoard = ({ state, playerName, send }: Props) => {
           hand={bank}
           title="Your Bank"
           onCardClick={(card) => {
-            send({ type: 'player.selectCard', player: playerName, card });
+            send({ type: 'player.selectCard', player: selectedPlayer, card });
           }}
           selectedCard={selectedCard}
           showPlayButton={false}

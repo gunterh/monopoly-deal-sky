@@ -1,24 +1,25 @@
 import { useStatelyActor } from '@statelyai/sky-react';
-import { useMachine } from '@xstate/react';
 import { useState } from 'react';
 import { PlayerBoard } from './PlayerBoard';
 import { Players } from './Players';
 import { skyConfig } from './game.sky';
 import { Login } from './login';
 
-const url = 'https://sky.stately.ai/6yOdof';
+const url = 'https://sky.stately.ai/zdNsCl';
 
 export const Game = () => {
   const [playerName, setPlayerName] = useState('');
-  // const [state, send] = useStatelyActor(
-  //   {
-  //     url,
-  //     sessionId: 'monopoly-deal-rostros',
-  //   },
-  //   skyConfig,
-  // );
+  const [selectedPlayer, setSelectedPlayer] = useState('');
+  const [state, send] = useStatelyActor(
+    {
+      url,
+      sessionId: 'monopoly-deal-rostros',
+    },
+    // @ts-ignore
+    skyConfig,
+  );
 
-  const [state, send] = useMachine(skyConfig.machine);
+  // const [state, send] = useMachine(skyConfig.machine);
 
   if (!send) return <div>loading...</div>;
 
@@ -40,7 +41,7 @@ export const Game = () => {
   const canStartGame = state.can(startGameEvent);
 
   const handleSelectPlayer = (player: string) => {
-    setPlayerName(player);
+    setSelectedPlayer(player);
   };
 
   return (
@@ -49,15 +50,26 @@ export const Game = () => {
         <h2>{`${
           playerName ? playerName + ', ' : ''
         } Welcome to Monopoly Deal `}</h2>
-        <Login playerName={playerName} setPlayerName={setPlayerName} />
+        <Login
+          playerName={playerName}
+          setPlayerName={setPlayerName}
+          setSelectedPlayer={setSelectedPlayer}
+        />
       </div>
       <Players
         players={players as string[]}
         onSelectPlayer={handleSelectPlayer}
         playerName={playerName}
+        selectedPlayer={selectedPlayer}
       />
       {playerName && (
-        <PlayerBoard state={state} playerName={playerName} send={send} />
+        // @ts-ignore
+        <PlayerBoard
+          state={state}
+          playerName={playerName}
+          selectedPlayer={selectedPlayer}
+          send={send}
+        />
       )}
       <div className="button-group">
         {canCreateGame && (

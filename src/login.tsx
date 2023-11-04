@@ -3,9 +3,14 @@ import { useState } from 'react';
 interface LoginProps {
   playerName?: string;
   setPlayerName: (name: string) => void;
+  setSelectedPlayer: (name: string) => void;
 }
 
-export const Login = ({ setPlayerName, playerName }: LoginProps) => {
+export const Login = ({
+  setPlayerName,
+  playerName,
+  setSelectedPlayer,
+}: LoginProps) => {
   const [name, setName] = useState('');
 
   if (playerName) {
@@ -26,7 +31,14 @@ export const Login = ({ setPlayerName, playerName }: LoginProps) => {
         />
       </div>
       <div>
-        <button onClick={() => setPlayerName(name)}>Login</button>
+        <button
+          onClick={() => {
+            setPlayerName(name);
+            setSelectedPlayer(name);
+          }}
+        >
+          Login
+        </button>
       </div>
     </>
   );

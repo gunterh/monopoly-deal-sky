@@ -136,3 +136,31 @@ export const Card = ({
     {children}
   </Svg>
 );
+
+interface EmptyCardProps {
+  size: number;
+  color: string;
+}
+
+export const EmptyCard = ({ size, color }: EmptyCardProps) => (
+  <Svg size={size} viewBox="0 0 506 786" xmlns="http://www.w3.org/2000/svg">
+    <rect
+      width="506"
+      height="786"
+      rx="20"
+      style={{
+        stroke: '#000000',
+        strokeWidth: 1,
+        fill: 'white',
+      }}
+    />
+    <rect
+      x="20"
+      y="20"
+      width="466"
+      height="746"
+      rx="20"
+      style={{ stroke: '#000000', strokeWidth: 2, fill: color }}
+    />
+  </Svg>
+);

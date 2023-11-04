@@ -1,4 +1,4 @@
-import { Card, CardType } from './card';
+import { Card, CardType, EmptyCard } from './card';
 
 interface CardCollectionProps {
   cards: Record<string, any>;
@@ -10,6 +10,7 @@ interface CardCollectionProps {
   showPlayButton: boolean;
   onPlayCard: (card: string) => void;
   cardsPlayed?: number;
+  showEmptyCard?: boolean;
 }
 
 const getColor = (card: CardType) => {
@@ -95,6 +96,7 @@ export const CardCollection = ({
   showPlayButton,
   onPlayCard,
   cardsPlayed,
+  showEmptyCard,
 }: CardCollectionProps) => {
   return (
     <div>
@@ -129,20 +131,24 @@ export const CardCollection = ({
           const deckCard = (cards as Record<string, any>)[card] as CardType;
           return (
             <div key={card}>
-              <Card
-                onClick={() => onCardClick(card)}
-                selected={card === selectedCard}
-                color={getColor(deckCard)}
-                size={size}
-                title={deckCard.name}
-                value={
-                  deckCard.type !== 'PropertyWildCard'
-                    ? deckCard.value
-                    : undefined
-                }
-                card={card}
-              />
-              {showPlayButton && card === selectedCard && (
+              {showEmptyCard ? (
+                <EmptyCard size={size} color="white" />
+              ) : (
+                <Card
+                  onClick={() => onCardClick(card)}
+                  selected={card === selectedCard}
+                  color={getColor(deckCard)}
+                  size={size}
+                  title={deckCard.name}
+                  value={
+                    deckCard.type !== 'PropertyWildCard'
+                      ? deckCard.value
+                      : undefined
+                  }
+                  card={card}
+                />
+              )}
+              {showPlayButton && !showEmptyCard && card === selectedCard && (
                 <div>
                   <button
                     onClick={() => onPlayCard(card)}

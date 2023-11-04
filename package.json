@@ -11,8 +11,8 @@
     "deploy:dev": "firebase deploy --only hosting:monopoly-deal-sky-dev"
   },
   "dependencies": {
-    "@statelyai/sky": "0.0.4",
-    "@statelyai/sky-react": "0.0.4",
+    "@statelyai/sky": "^0.0.6",
+    "@statelyai/sky-react": "^0.0.6",
     "@xstate/react": "4.0.0-beta.10",
     "firebase": "^10.5.2",
     "react": "18.2.0",
