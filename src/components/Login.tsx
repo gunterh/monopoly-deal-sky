@@ -1,5 +1,8 @@
+import { getAuth } from 'firebase/auth';
 import { useState } from 'react';
 import { PlayerActorContext } from './PlayerActorContext';
+
+const auth = getAuth();
 
 export const Login = () => {
   const playerActor = PlayerActorContext.useActorRef();
@@ -11,41 +14,9 @@ export const Login = () => {
   if (playerName) {
     return (
       <div>
-        <button
-          onClick={() =>
-            playerActor.send({
-              type: 'SET_PLAYER_NAME',
-              playerName: '',
-            })
-          }
-        >
-          Logout
-        </button>
+        <button onClick={() => auth.signOut()}>Logout</button>
       </div>
     );
   }
-  return (
-    <>
-      <div className="app-header__player-name">
-        <input
-          type="text"
-          placeholder="Player name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
-      <div>
-        <button
-          onClick={() => {
-            playerActor.send({
-              type: 'SET_PLAYER_NAME',
-              playerName: name,
-            });
-          }}
-        >
-          Login
-        </button>
-      </div>
-    </>
-  );
+  return <div>Waiting for authentication...</div>;
 };

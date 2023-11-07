@@ -1,16 +1,34 @@
 import { useSelector } from '@xstate/react';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useEffect } from 'react';
 import { useGameActor } from './GameProvider';
 import { Login } from './Login';
 import { PlayerActorContext } from './PlayerActorContext';
 import { PlayerBoard } from './PlayerBoard';
 import { Players } from './Players';
 
+const auth = getAuth();
+
 export const Game = () => {
   const actor = useGameActor();
+  const playerActor = PlayerActorContext.useActorRef();
 
   const playerName = PlayerActorContext.useSelector(
     (state) => state.context.playerName ?? '',
   );
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      playerActor.send({
+        type: 'SET_PLAYER_NAME',
+        playerName: user?.displayName ?? user?.email ?? '',
+      });
+    });
+
+    // Just return the unsubscribe function.  React will call it when it's
+    // no longer needed.
+    return unsubscribe;
+  }, []);
 
   const createGameEvent = {
     type: 'game.create' as const,

@@ -31,6 +31,12 @@ export const useStatelyGameActor = () => {
     {
       url,
       sessionId: 'monopoly-deal',
+      onPlayerJoined: ({ numberOfPlayers }) => {
+        console.log('Player Joined. Number of players: ', numberOfPlayers);
+      },
+      onPlayerLeft: ({ numberOfPlayers }) => {
+        console.log('Player left. Number of players: ', numberOfPlayers);
+      },
     },
     // @ts-ignore
     skyConfig,
