@@ -7,7 +7,7 @@
     "build": "vite build",
     "lint": "tsc",
     "sky": "xstate sky \"./src/**/*.ts?(x)\"",
-    "deploy": "firebase deploy --only hosting",
+    "deploy:prod": "firebase deploy --only hosting:monopoly-deal-sky",
     "deploy:dev": "firebase deploy --only hosting:monopoly-deal-sky-dev"
   },
   "dependencies": {

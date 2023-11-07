@@ -1,13 +1,20 @@
 import { useSelector } from '@xstate/react';
-import { CardCollection } from './CardCollection';
+import {
+  BankCardCollection,
+  HandCardCollection,
+  PropertiesCardCollection,
+} from './CardCollection';
 import { useGameActor } from './GameProvider';
+import { PlayerActorContext } from './PlayerActorContext';
 
-interface Props {
-  playerName: string;
-  selectedPlayer: string;
-}
+export const PlayerBoard = () => {
+  const selectedPlayer = PlayerActorContext.useSelector(
+    (s) => s.context.selectedPlayer ?? '',
+  );
+  const playerName = PlayerActorContext.useSelector(
+    (s) => s.context.playerName ?? '',
+  );
 
-export const PlayerBoard = ({ playerName, selectedPlayer }: Props) => {
   const actor = useGameActor();
   const playerHands = useSelector(
     actor,
@@ -24,11 +31,6 @@ export const PlayerBoard = ({ playerName, selectedPlayer }: Props) => {
   );
   const isPlaying = useSelector(actor, (state) => state.matches('playing'));
 
-  const cardsPlayed = useSelector(actor, (state) =>
-    selectedPlayer === state.context.playerInTurn
-      ? state.context.cardsPlayed
-      : undefined,
-  );
   const hand = playerHands ? playerHands[selectedPlayer] ?? [] : [];
   const properties = playerProperties
     ? playerProperties[selectedPlayer] ?? []
@@ -44,15 +46,14 @@ export const PlayerBoard = ({ playerName, selectedPlayer }: Props) => {
     actor,
     (state) => state.context.playerInTurn,
   );
-  const cards = useSelector(actor, (state) => state.context.cards);
 
   const playCardEvent = {
     type: 'player.playCard' as const,
-    player: selectedPlayer,
+    player: playerName,
   };
   const endTurnEvent = {
     type: 'player.endTurn' as const,
-    player: selectedPlayer,
+    player: playerName,
   };
 
   const canEndTurnEvent = useSelector(actor, (state) =>
@@ -76,58 +77,11 @@ export const PlayerBoard = ({ playerName, selectedPlayer }: Props) => {
           border: '1px dashed black',
         }}
       >
-        <CardCollection
-          cards={cards ?? {}}
-          size={size}
-          hand={hand}
-          title={`${selectedPlayer}'s Hand`}
-          onCardClick={(card) => {
-            actor.send({
-              type: 'player.selectCard',
-              player: selectedPlayer,
-              card,
-            });
-          }}
-          selectedCard={selectedCard}
-          showPlayButton={canPlayCardEvent}
-          onPlayCard={() => actor.send(playCardEvent)}
-          cardsPlayed={cardsPlayed}
-          showEmptyCard={selectedPlayer !== playerName}
-        />
+        <HandCardCollection size={size} />
 
-        <CardCollection
-          cards={cards ?? {}}
-          size={size}
-          hand={properties}
-          title="Properties"
-          onCardClick={(card) => {
-            actor.send({
-              type: 'player.selectCard',
-              player: selectedPlayer,
-              card,
-            });
-          }}
-          selectedCard={selectedCard}
-          showPlayButton={false}
-          onPlayCard={() => {}}
-        />
+        <PropertiesCardCollection size={size} />
 
-        <CardCollection
-          cards={cards ?? {}}
-          size={size}
-          hand={bank}
-          title="Your Bank"
-          onCardClick={(card) => {
-            actor.send({
-              type: 'player.selectCard',
-              player: selectedPlayer,
-              card,
-            });
-          }}
-          selectedCard={selectedCard}
-          showPlayButton={false}
-          onPlayCard={() => {}}
-        />
+        <BankCardCollection size={size} />
         {canEndTurnEvent && (
           <button onClick={() => actor.send(endTurnEvent)}>End Turn</button>
         )}

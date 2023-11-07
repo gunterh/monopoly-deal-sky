@@ -1,11 +1,7 @@
+import { useSelector } from '@xstate/react';
 import styled from 'styled-components';
-
-interface Props {
-  players: string[];
-  onSelectPlayer: (player: string) => void;
-  selectedPlayer?: string;
-  playerName?: string;
-}
+import { useGameActor } from './GameProvider';
+import { PlayerActorContext } from './PlayerActorContext';
 
 const TabButton = styled.button<{ active?: boolean; main?: boolean }>`
   background: ${(props) => (props.main ? 'gray' : 'none')};
@@ -28,15 +24,29 @@ const Tab = styled.div`
   align-items: center;
 `;
 
-export const Players = (props: Props) => {
+export const Players = () => {
+  const actor = useGameActor();
+  const players = useSelector(actor, (s) => s.context.players as string[]);
+  const playerName = PlayerActorContext.useSelector(
+    (s) => s.context.playerName,
+  );
+  const selectedPlayer = PlayerActorContext.useSelector(
+    (s) => s.context.selectedPlayer,
+  );
+  const playerActor = PlayerActorContext.useActorRef();
   return (
     <Tab>
-      {props.players.map((player) => (
+      {players.map((player) => (
         <TabButton
-          active={player === props.selectedPlayer}
+          active={player === selectedPlayer}
           key={player}
-          onClick={() => props.onSelectPlayer(player)}
-          main={player === props.playerName}
+          onClick={() =>
+            playerActor.send({
+              type: 'SELECT_PLAYER',
+              player,
+            })
+          }
+          main={player === playerName}
         >
           {player}
         </TabButton>

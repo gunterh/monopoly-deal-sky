@@ -1,16 +1,16 @@
 import { useSelector } from '@xstate/react';
-import { useState } from 'react';
 import { useGameActor } from './GameProvider';
 import { Login } from './Login';
+import { PlayerActorContext } from './PlayerActorContext';
 import { PlayerBoard } from './PlayerBoard';
 import { Players } from './Players';
 
 export const Game = () => {
-  const [playerName, setPlayerName] = useState('');
-  const [selectedPlayer, setSelectedPlayer] = useState('');
   const actor = useGameActor();
 
-  const players = useSelector(actor, (state) => state.context.players);
+  const playerName = PlayerActorContext.useSelector(
+    (state) => state.context.playerName ?? '',
+  );
 
   const createGameEvent = {
     type: 'game.create' as const,
@@ -29,31 +29,16 @@ export const Game = () => {
   const canJoin = useSelector(actor, (state) => state.can(joinEvent));
   const canStartGame = useSelector(actor, (state) => state.can(startGameEvent));
 
-  const handleSelectPlayer = (player: string) => {
-    setSelectedPlayer(player);
-  };
-
   return (
     <div className="app">
       <div className="app-header">
         <h2>{`${
           playerName ? playerName + ', ' : ''
         } Welcome to Monopoly Deal `}</h2>
-        <Login
-          playerName={playerName}
-          setPlayerName={setPlayerName}
-          setSelectedPlayer={setSelectedPlayer}
-        />
+        <Login />
       </div>
-      <Players
-        players={players as string[]}
-        onSelectPlayer={handleSelectPlayer}
-        playerName={playerName}
-        selectedPlayer={selectedPlayer}
-      />
-      {playerName && (
-        <PlayerBoard playerName={playerName} selectedPlayer={selectedPlayer} />
-      )}
+      <Players />
+      {playerName && <PlayerBoard />}
       <div className="button-group">
         {canCreateGame && (
           <button onClick={() => actor.send(createGameEvent)}>

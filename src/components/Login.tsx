@@ -1,22 +1,26 @@
 import { useState } from 'react';
+import { PlayerActorContext } from './PlayerActorContext';
 
-interface LoginProps {
-  playerName?: string;
-  setPlayerName: (name: string) => void;
-  setSelectedPlayer: (name: string) => void;
-}
-
-export const Login = ({
-  setPlayerName,
-  playerName,
-  setSelectedPlayer,
-}: LoginProps) => {
+export const Login = () => {
+  const playerActor = PlayerActorContext.useActorRef();
+  const playerName = PlayerActorContext.useSelector(
+    (state) => state.context.playerName ?? '',
+  );
   const [name, setName] = useState('');
 
   if (playerName) {
     return (
       <div>
-        <button onClick={() => setPlayerName('')}>Logout</button>
+        <button
+          onClick={() =>
+            playerActor.send({
+              type: 'SET_PLAYER_NAME',
+              playerName: '',
+            })
+          }
+        >
+          Logout
+        </button>
       </div>
     );
   }
@@ -33,8 +37,10 @@ export const Login = ({
       <div>
         <button
           onClick={() => {
-            setPlayerName(name);
-            setSelectedPlayer(name);
+            playerActor.send({
+              type: 'SET_PLAYER_NAME',
+              playerName: name,
+            });
           }}
         >
           Login

@@ -1,16 +1,10 @@
+import { useSelector } from '@xstate/react';
 import { Card, CardType, EmptyCard } from './Card';
+import { useGameActor } from './GameProvider';
+import { PlayerActorContext } from './PlayerActorContext';
 
 interface CardCollectionProps {
-  cards: Record<string, any>;
   size: number;
-  hand: string[];
-  title: string;
-  selectedCard?: string;
-  onCardClick: (card: string) => void;
-  showPlayButton: boolean;
-  onPlayCard: (card: string) => void;
-  cardsPlayed?: number;
-  showEmptyCard?: boolean;
 }
 
 const getColor = (card: CardType) => {
@@ -86,18 +80,39 @@ const Circle = ({ active }: { active?: boolean }) => {
   );
 };
 
-export const CardCollection = ({
-  cards,
-  size,
-  hand,
-  title,
-  selectedCard,
-  onCardClick,
-  showPlayButton,
-  onPlayCard,
-  cardsPlayed,
-  showEmptyCard,
-}: CardCollectionProps) => {
+export const HandCardCollection = ({ size }: CardCollectionProps) => {
+  const actor = useGameActor();
+  const cards = useSelector(actor, (state) => state.context.cards);
+  const selectedPlayer = PlayerActorContext.useSelector(
+    (s) => s.context.selectedPlayer ?? '',
+  );
+  const cardsPlayed = useSelector(actor, (state) =>
+    selectedPlayer === state.context.playerInTurn
+      ? state.context.cardsPlayed
+      : undefined,
+  );
+  const playerHands = useSelector(
+    actor,
+    (state) => state.context.playerHands as Record<string, string[]>,
+  );
+  const playerName = PlayerActorContext.useSelector(
+    (s) => s.context.playerName ?? '',
+  );
+  const hand = playerHands ? playerHands[selectedPlayer] ?? [] : [];
+  const selectedCard = useSelector(
+    actor,
+    (state) => state.context.selectedCard,
+  );
+
+  const playCardEvent = {
+    type: 'player.playCard' as const,
+    player: playerName,
+  };
+
+  const canPlayCardEvent = useSelector(actor, (state) =>
+    state.can(playCardEvent),
+  );
+
   return (
     <div>
       <div
@@ -109,7 +124,7 @@ export const CardCollection = ({
         }}
       >
         <h2>
-          <strong>{title}</strong>
+          <strong>`${selectedPlayer}'s Hand`</strong>
         </h2>
         {cardsPlayed !== undefined && (
           <>
@@ -131,11 +146,17 @@ export const CardCollection = ({
           const deckCard = (cards as Record<string, any>)[card] as CardType;
           return (
             <div key={card}>
-              {showEmptyCard ? (
+              {selectedPlayer !== playerName ? (
                 <EmptyCard size={size} color="white" />
               ) : (
                 <Card
-                  onClick={() => onCardClick(card)}
+                  onClick={() =>
+                    actor.send({
+                      type: 'player.selectCard',
+                      player: playerName,
+                      card,
+                    })
+                  }
                   selected={card === selectedCard}
                   color={getColor(deckCard)}
                   size={size}
@@ -148,13 +169,160 @@ export const CardCollection = ({
                   card={card}
                 />
               )}
-              {showPlayButton && !showEmptyCard && card === selectedCard && (
+              {canPlayCardEvent && card === selectedCard && (
                 <div>
                   <button
-                    onClick={() => onPlayCard(card)}
+                    onClick={() => actor.send(playCardEvent)}
                   >{`Play card`}</button>
                 </div>
               )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export const PropertiesCardCollection = ({ size }: CardCollectionProps) => {
+  const actor = useGameActor();
+  const cards = useSelector(actor, (state) => state.context.cards);
+  const playerProperties = useSelector(
+    actor,
+    (state) =>
+      (state.context.playerProperties ?? {}) as Record<string, string[]>,
+  );
+  const selectedPlayer = PlayerActorContext.useSelector(
+    (s) => s.context.selectedPlayer ?? '',
+  );
+  const playerName = PlayerActorContext.useSelector(
+    (s) => s.context.playerName ?? '',
+  );
+  const properties = playerProperties
+    ? playerProperties[selectedPlayer] ?? []
+    : [];
+  const selectedCard = useSelector(
+    actor,
+    (state) => state.context.selectedCard,
+  );
+
+  return (
+    <div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '5px',
+        }}
+      >
+        <h2>
+          <strong>Properties</strong>
+        </h2>
+      </div>
+      <div
+        style={{
+          width: '80vw',
+          overflowX: 'auto',
+          display: 'flex',
+          gap: '5px',
+        }}
+      >
+        {properties.map((card) => {
+          const deckCard = (cards as Record<string, any>)[card] as CardType;
+          return (
+            <div key={card}>
+              <Card
+                onClick={() =>
+                  actor.send({
+                    type: 'player.selectCard',
+                    player: playerName,
+                    card,
+                  })
+                }
+                selected={card === selectedCard}
+                color={getColor(deckCard)}
+                size={size}
+                title={deckCard.name}
+                value={
+                  deckCard.type !== 'PropertyWildCard'
+                    ? deckCard.value
+                    : undefined
+                }
+                card={card}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export const BankCardCollection = ({ size }: CardCollectionProps) => {
+  const actor = useGameActor();
+  const cards = useSelector(actor, (state) => state.context.cards);
+  const playerBank = useSelector(
+    actor,
+    (state) => (state.context.playerBanks ?? {}) as Record<string, string[]>,
+  );
+  const selectedPlayer = PlayerActorContext.useSelector(
+    (s) => s.context.selectedPlayer ?? '',
+  );
+  const playerName = PlayerActorContext.useSelector(
+    (s) => s.context.playerName ?? '',
+  );
+  const bank = playerBank ? playerBank[selectedPlayer] ?? [] : [];
+  const selectedCard = useSelector(
+    actor,
+    (state) => state.context.selectedCard,
+  );
+
+  return (
+    <div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '5px',
+        }}
+      >
+        <h2>
+          <strong>Properties</strong>
+        </h2>
+      </div>
+      <div
+        style={{
+          width: '80vw',
+          overflowX: 'auto',
+          display: 'flex',
+          gap: '5px',
+        }}
+      >
+        {bank.map((card) => {
+          const deckCard = (cards as Record<string, any>)[card] as CardType;
+          return (
+            <div key={card}>
+              <Card
+                onClick={() =>
+                  actor.send({
+                    type: 'player.selectCard',
+                    player: playerName,
+                    card,
+                  })
+                }
+                selected={card === selectedCard}
+                color={getColor(deckCard)}
+                size={size}
+                title={deckCard.name}
+                value={
+                  deckCard.type !== 'PropertyWildCard'
+                    ? deckCard.value
+                    : undefined
+                }
+                card={card}
+              />
             </div>
           );
         })}

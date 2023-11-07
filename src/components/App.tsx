@@ -1,34 +1,28 @@
 import { Game } from './Game';
 import { GameActor, GameProvider, useStatelyGameActor } from './GameProvider';
 import Loading from './Loading';
-import {
-  PlayerActor,
-  PlayerProvider,
-  useStatelyPlayerActor,
-} from './PlayerProvider';
+import { PlayerActorContext } from './PlayerActorContext';
 
 interface Props {
   gameActor: GameActor;
-  playerActor: PlayerActor;
 }
 
 const App = (props: Props) => {
   return (
     <GameProvider actor={props.gameActor}>
-      <PlayerProvider actor={props.playerActor}>
+      <PlayerActorContext.Provider>
         <Game />
-      </PlayerProvider>
+      </PlayerActorContext.Provider>
     </GameProvider>
   );
 };
 
 const AppContainer = () => {
   const gameActor = useStatelyGameActor();
-  const playerActor = useStatelyPlayerActor('player1');
 
-  if (!gameActor || !playerActor) return <Loading />;
+  if (!gameActor) return <Loading />;
 
-  return <App gameActor={gameActor} playerActor={playerActor} />;
+  return <App gameActor={gameActor} />;
 };
 
 export default AppContainer;
