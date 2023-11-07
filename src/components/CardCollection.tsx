@@ -1,4 +1,4 @@
-import { Card, CardType, EmptyCard } from './card';
+import { Card, CardType, EmptyCard } from './Card';
 
 interface CardCollectionProps {
   cards: Record<string, any>;

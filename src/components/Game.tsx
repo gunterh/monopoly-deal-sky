@@ -1,29 +1,16 @@
-import { useStatelyActor } from '@statelyai/sky-react';
+import { useSelector } from '@xstate/react';
 import { useState } from 'react';
+import { useGameActor } from './GameProvider';
+import { Login } from './Login';
 import { PlayerBoard } from './PlayerBoard';
 import { Players } from './Players';
-import { skyConfig } from './game.sky';
-import { Login } from './login';
-
-const url = 'https://sky.stately.ai/zdNsCl';
 
 export const Game = () => {
   const [playerName, setPlayerName] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState('');
-  const [state, send] = useStatelyActor(
-    {
-      url,
-      sessionId: 'monopoly-deal-rostros',
-    },
-    // @ts-ignore
-    skyConfig,
-  );
+  const actor = useGameActor();
 
-  // const [state, send] = useMachine(skyConfig.machine);
-
-  if (!send) return <div>loading...</div>;
-
-  const players = state.context.players;
+  const players = useSelector(actor, (state) => state.context.players);
 
   const createGameEvent = {
     type: 'game.create' as const,
@@ -35,10 +22,12 @@ export const Game = () => {
 
   const joinEvent = { type: 'game.addPlayer' as const, player: playerName };
 
-  const canCreateGame = state.can(createGameEvent);
+  const canCreateGame = useSelector(actor, (state) =>
+    state.can(createGameEvent),
+  );
 
-  const canJoin = state.can(joinEvent);
-  const canStartGame = state.can(startGameEvent);
+  const canJoin = useSelector(actor, (state) => state.can(joinEvent));
+  const canStartGame = useSelector(actor, (state) => state.can(startGameEvent));
 
   const handleSelectPlayer = (player: string) => {
     setSelectedPlayer(player);
@@ -63,21 +52,19 @@ export const Game = () => {
         selectedPlayer={selectedPlayer}
       />
       {playerName && (
-        // @ts-ignore
-        <PlayerBoard
-          state={state}
-          playerName={playerName}
-          selectedPlayer={selectedPlayer}
-          send={send}
-        />
+        <PlayerBoard playerName={playerName} selectedPlayer={selectedPlayer} />
       )}
       <div className="button-group">
         {canCreateGame && (
-          <button onClick={() => send(createGameEvent)}>Create Game</button>
+          <button onClick={() => actor.send(createGameEvent)}>
+            Create Game
+          </button>
         )}
-        {canJoin && <button onClick={() => send(joinEvent)}>Join Game</button>}
+        {canJoin && (
+          <button onClick={() => actor.send(joinEvent)}>Join Game</button>
+        )}
         {canStartGame && (
-          <button onClick={() => send(startGameEvent)}>Start Game</button>
+          <button onClick={() => actor.send(startGameEvent)}>Start Game</button>
         )}
       </div>
     </div>
